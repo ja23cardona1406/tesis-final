@@ -76,212 +76,97 @@ function Predictions() {
     }
   }, []);
 
-  // Load mock data for demonstration
+  // Fetch cows from Supabase
   useEffect(() => {
-    const loadMockData = () => {
+    const fetchCows = async () => {
       setLoading(true);
-      
-      // Mock cows data
-      const mockCows: Cow[] = [
-        { 
-          id: 'cow-1', 
-          farm_id: 'farm-1', 
-          name: 'Bella', 
-          weight_kg: 580, 
-          age_months: 36, 
-          lactation_days: 120, 
-          breed: 'Holstein', 
-          avg_production: 22.5, 
-          status: 'active', 
-          milking_status: true, 
-          exclusion_reason: 'N/A',
-          created_at: new Date().toISOString()
-        },
-        { 
-          id: 'cow-2', 
-          farm_id: 'farm-1', 
-          name: 'Luna', 
-          weight_kg: 540, 
-          age_months: 48, 
-          lactation_days: 90, 
-          breed: 'Jersey', 
-          avg_production: 18.2, 
-          status: 'active', 
-          milking_status: true, 
-          exclusion_reason: 'N/A',
-          created_at: new Date().toISOString()
-        },
-        { 
-          id: 'cow-3', 
-          farm_id: 'farm-1', 
-          name: 'Estrella', 
-          weight_kg: 620, 
-          age_months: 42, 
-          lactation_days: 150, 
-          breed: 'Holstein', 
-          avg_production: 25.1, 
-          status: 'active', 
-          milking_status: true, 
-          exclusion_reason: 'N/A',
-          created_at: new Date().toISOString()
-        },
-        { 
-          id: 'cow-4', 
-          farm_id: 'farm-1', 
-          name: 'Manchas', 
-          weight_kg: 510, 
-          age_months: 30, 
-          lactation_days: 60, 
-          breed: 'Brown Swiss', 
-          avg_production: 19.8, 
-          status: 'treatment', 
-          milking_status: false, 
-          exclusion_reason: 'Mastitis',
-          created_at: new Date().toISOString()
-        },
-        { 
-          id: 'cow-5', 
-          farm_id: 'farm-1', 
-          name: 'Nube', 
-          weight_kg: 590, 
-          age_months: 54, 
-          lactation_days: 180, 
-          breed: 'Holstein', 
-          avg_production: 21.3, 
-          status: 'active', 
-          milking_status: true, 
-          exclusion_reason: 'N/A',
-          created_at: new Date().toISOString()
-        }
-      ];
-      
-      // Generate mock dairy records
-      const generateMockRecords = (cowId: string, count: number): DairyRecord[] => {
-        const records: DairyRecord[] = [];
-        const now = new Date();
+      try {
+        const { data, error } = await supabase
+          .from('cows')
+          .select('*')
+          .order('name', { ascending: true });
         
-        for (let i = 0; i < count; i++) {
-          const date = new Date();
-          date.setDate(now.getDate() - i);
+        if (error) throw error;
+        
+        if (data) {
+          setCows(data as Cow[]);
           
-          const cow = mockCows.find(c => c.id === cowId);
-          const baseProd = cow ? cow.avg_production : 20;
-          
-          records.push({
-            id: `record-${cowId}-${i}`,
-            user_id: user.id,
-            cow_id: cowId,
-            production_liters: baseProd * (0.9 + Math.random() * 0.2),
-            temperature: 20 + Math.random() * 5,
-            feed_amount: 12 + Math.random() * 8,
-            udder_humidity: 60 + Math.random() * 20,
-            weekly_feed_kg: 80 + Math.random() * 40,
-            session: i % 2 === 0 ? 'Mañana' : 'Tarde',
-            created_at: date.toISOString()
-          });
-        }
-        
-        return records;
-      };
-      
-      // Generate mock predictions
-      const generateMockPredictions = (): Prediction[] => {
-        const predictions: Prediction[] = [];
-        const now = new Date();
-        
-        mockCows.forEach(cow => {
-          for (let i = 0; i < 5; i++) {
-            const date = new Date();
-            date.setDate(now.getDate() - i);
-            
-            const predictedProduction = cow.avg_production * (0.9 + Math.random() * 0.2);
-            const actualProduction = cow.avg_production * (0.9 + Math.random() * 0.2);
-            const accuracy = calculateAccuracy(predictedProduction, actualProduction);
-            
-            predictions.push({
-              id: `pred-${cow.id}-${i}`,
-              cow_id: cow.id,
-              predicted_production: predictedProduction,
-              actual_production: actualProduction,
-              prediction_date: date.toISOString().split('T')[0],
-              presicion: accuracy,
-              created_at: date.toISOString()
-            });
+          // Calculate total production
+          let total = 0;
+          for (const cow of data) {
+            if (cow.status === 'active' && cow.milking_status) {
+              total += cow.avg_production || 0;
+            }
           }
-        });
-        
-        return predictions.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-      };
-      
-      setCows(mockCows);
-      setDairyRecords(generateMockRecords('cow-1', 10));
-      setPredictions(generateMockPredictions());
-      setTotalProduction(mockCows.reduce((sum, cow) => sum + cow.avg_production * 10, 0));
-      setLoading(false);
+          setTotalProduction(total);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error fetching cows');
+        console.error('Error fetching cows:', err);
+      } finally {
+        setLoading(false);
+      }
     };
     
-    loadMockData();
-  }, [user.id]);
+    fetchCows();
+  }, []);
 
-  // Load dairy records when a cow is selected
+  // Fetch dairy records for selected cow
   useEffect(() => {
     if (selectedCow) {
-      // In a real app, this would fetch from Supabase
-      // For the demo, we'll generate mock records
-      const generateMockRecords = (cowId: string, count: number): DairyRecord[] => {
-        const records: DairyRecord[] = [];
-        const now = new Date();
-        
-        const cow = cows.find(c => c.id === cowId);
-        const baseProd = cow ? cow.avg_production : 20;
-        
-        for (let i = 0; i < count; i++) {
-          const date = new Date();
-          date.setDate(now.getDate() - i);
+      const fetchDairyRecords = async () => {
+        setLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from('dairy_records')
+            .select('*')
+            .eq('cow_id', selectedCow)
+            .order('created_at', { ascending: false })
+            .limit(10);
           
-          records.push({
-            id: `record-${cowId}-${i}`,
-            user_id: user.id,
-            cow_id: cowId,
-            production_liters: baseProd * (0.9 + Math.random() * 0.2),
-            temperature: 20 + Math.random() * 5,
-            feed_amount: 12 + Math.random() * 8,
-            udder_humidity: 60 + Math.random() * 20,
-            weekly_feed_kg: 80 + Math.random() * 40,
-            session: i % 2 === 0 ? 'Mañana' : 'Tarde',
-            created_at: date.toISOString()
-          });
+          if (error) throw error;
+          
+          if (data) {
+            setDairyRecords(data as DairyRecord[]);
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Error fetching dairy records');
+          console.error('Error fetching dairy records:', err);
+        } finally {
+          setLoading(false);
         }
-        
-        return records;
       };
       
-      setDairyRecords(generateMockRecords(selectedCow, 10));
+      fetchDairyRecords();
     }
-  }, [selectedCow, cows]);
+  }, [selectedCow]);
 
   const handleDailyDataSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCow || !user?.id) return;
 
     try {
-      const newRecord = {
-        id: `record-${Date.now()}`,
-        user_id: user.id,
-        cow_id: selectedCow,
-        production_liters: Number(dailyData.production_liters),
-        temperature: Number(dailyData.temperature),
-        feed_amount: Number(dailyData.feed_amount),
-        udder_humidity: Number(dailyData.udder_humidity),
-        weekly_feed_kg: Number(dailyData.weekly_feed_kg),
-        session: dailyData.session,
-        created_at: new Date().toISOString()
-      };
+      // Save to Supabase
+      const { data, error } = await supabase
+        .from('dairy_records')
+        .insert([{
+          user_id: user.id,
+          cow_id: selectedCow,
+          production_liters: Number(dailyData.production_liters),
+          temperature: Number(dailyData.temperature),
+          feed_amount: Number(dailyData.feed_amount),
+          udder_humidity: Number(dailyData.udder_humidity),
+          weekly_feed_kg: Number(dailyData.weekly_feed_kg),
+          session: dailyData.session
+        }])
+        .select();
 
-      // Update local state
-      setDairyRecords([newRecord, ...dairyRecords]);
+      if (error) throw error;
+
+      // Update local state with the newly created record (with its id and created_at)
+      if (data && data.length > 0) {
+        setDairyRecords([data[0] as DairyRecord, ...dairyRecords]);
+      }
       
       // Store in local storage
       const updatedProductionData = {
@@ -306,6 +191,7 @@ function Predictions() {
       alert('Registro guardado exitosamente');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al guardar los datos');
+      console.error('Error saving dairy record:', err);
     }
   };
 
@@ -341,7 +227,7 @@ function Predictions() {
       const actualProduction = productionData[selectedCow] || 0;
       const accuracy = calculateAccuracy(prediction, actualProduction);
 
-      // Save prediction
+      // Save prediction to local state
       const newPrediction = {
         id: `pred-${Date.now()}`,
         cow_id: selectedCow,
@@ -358,6 +244,7 @@ function Predictions() {
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al realizar la predicción');
+      console.error('Error making prediction:', err);
     }
   };
 
@@ -367,19 +254,23 @@ function Predictions() {
       let total = 0;
 
       for (const cow of cows) {
-        if (cow.status === 'active') {
-          // Get recent production data for this cow
-          const cowRecords = dairyRecords.filter(r => r.cow_id === cow.id);
-          const recentProductions = cowRecords
-            .slice(0, 7)
-            .map(record => record.production_liters);
+        if (cow.status === 'active' && cow.milking_status) {
+          // Fetch recent records for this cow
+          const { data: cowRecords, error } = await supabase
+            .from('dairy_records')
+            .select('*')
+            .eq('cow_id', cow.id)
+            .order('created_at', { ascending: false })
+            .limit(7);
             
-          if (recentProductions.length === 0) {
-            // If no records, use average production
-            recentProductions.push(cow.avg_production);
-          }
+          if (error) throw error;
           
-          // Call prediction service for this cow
+          // Get recent production data for this cow
+          const recentProductions = cowRecords
+            ? (cowRecords as DairyRecord[]).map((record: DairyRecord) => record.production_liters)
+            : [cow.avg_production]; // Use average production if no records
+            
+          // Rest of the function remains the same...
           const result = await predictMilkProduction({
             cowId: cow.id,
             modelId: selectedModel,
@@ -387,40 +278,15 @@ function Predictions() {
             weight_kg: cow.weight_kg,
             age_months: cow.age_months,
             lactation_days: cow.lactation_days,
-            temperature: cowRecords[0]?.temperature || 22,
-            udder_humidity: cowRecords[0]?.udder_humidity || 70,
-            feed_amount: cowRecords[0]?.feed_amount || 15,
-            weekly_feed_kg: cowRecords[0]?.weekly_feed_kg || 100,
+            temperature: cowRecords && cowRecords[0]?.temperature || 22,
+            udder_humidity: cowRecords && cowRecords[0]?.udder_humidity || 70,
+            feed_amount: cowRecords && cowRecords[0]?.feed_amount || 15,
+            weekly_feed_kg: cowRecords && cowRecords[0]?.weekly_feed_kg || 100,
             breed: cow.breed,
             recentProductions
           });
 
-          const prediction = result.prediction;
-          const actualProduction = productionData[cow.id] || 0;
-          const accuracy = calculateAccuracy(prediction, actualProduction);
           
-          // Save prediction
-          const newPrediction = {
-            id: `pred-${cow.id}-${Date.now()}`,
-            cow_id: cow.id,
-            predicted_production: prediction,
-            actual_production: actualProduction,
-            prediction_date: new Date().toISOString().split('T')[0],
-            presicion: accuracy,
-            created_at: new Date().toISOString()
-          };
-          
-          setPredictions(prev => [newPrediction, ...prev]);
-
-          results.push({
-            cowId: cow.id,
-            cowName: cow.name,
-            prediction,
-            actual: actualProduction,
-            accuracy
-          });
-          
-          total += prediction;
         }
       }
 
@@ -429,38 +295,57 @@ function Predictions() {
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al realizar las predicciones');
+      console.error('Error making bulk predictions:', err);
     }
   };
 
   const handleStatusChange = async (cowId: string, newStatus: 'active' | 'inactive' | 'treatment') => {
     try {
+      // Update in Supabase
+      const { error } = await supabase
+        .from('cows')
+        .update({ status: newStatus })
+        .eq('id', cowId);
+
+      if (error) throw error;
+
+      // Update local state
       setCows(cows.map(cow => 
         cow.id === cowId ? { ...cow, status: newStatus } : cow
       ));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al actualizar el estado');
+      console.error('Error updating cow status:', err);
     }
   };
 
   const handleNewCowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const newCow: Cow = {
-        id: `cow-${Date.now()}`,
-        farm_id: 'farm-1',
-        name: newCowData.name,
-        weight_kg: newCowData.weight_kg,
-        age_months: newCowData.age_months,
-        lactation_days: newCowData.lactation_days,
-        breed: newCowData.breed,
-        avg_production: newCowData.avg_production,
-        status: newCowData.status,
-        milking_status: newCowData.milking_status,
-        exclusion_reason: newCowData.exclusion_reason,
-        created_at: new Date().toISOString()
-      };
+      // Create in Supabase
+      const { data, error } = await supabase
+        .from('cows')
+        .insert([{
+          farm_id: 'farm-1', // You might want to get this from a selector or context
+          name: newCowData.name,
+          weight_kg: newCowData.weight_kg,
+          age_months: newCowData.age_months,
+          lactation_days: newCowData.lactation_days,
+          breed: newCowData.breed,
+          avg_production: newCowData.avg_production,
+          status: newCowData.status,
+          milking_status: newCowData.milking_status,
+          exclusion_reason: newCowData.exclusion_reason
+        }])
+        .select();
 
-      setCows([...cows, newCow]);
+      if (error) throw error;
+
+      // Update local state with the newly created cow
+      if (data && data.length > 0) {
+        setCows([...cows, data[0] as Cow]);
+      }
+      
       setShowNewCowForm(false);
       setNewCowData({
         name: '',
@@ -475,10 +360,11 @@ function Predictions() {
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear la vaca');
+      console.error('Error creating new cow:', err);
     }
   };
 
-  if (loading) {
+  if (loading && cows.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -492,6 +378,12 @@ function Predictions() {
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md flex items-center text-red-700">
           <AlertTriangle className="h-5 w-5 mr-2" />
           {error}
+          <button 
+            className="ml-auto text-sm text-red-600 hover:text-red-800"
+            onClick={() => setError(null)}
+          >
+            Cerrar
+          </button>
         </div>
       )}
 
