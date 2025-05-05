@@ -1,3 +1,9 @@
+export interface User {
+  id: string;
+  name?: string;
+  email?: string;
+}
+
 export interface Cow {
   id: string;
   farm_id: string;
@@ -21,7 +27,6 @@ export interface DairyRecord {
   temperature: number;
   feed_amount: number;
   udder_humidity: number;
-  weekly_feed_kg: number;
   session: 'Mañana' | 'Tarde';
   created_at: string;
 }
@@ -30,9 +35,9 @@ export interface Prediction {
   id: string;
   cow_id: string;
   predicted_production: number;
-  actual_production: number;
+  actual_production: number | null;
   prediction_date: string;
-  presicion: number;
+  presicion: number | null;
   created_at: string;
 }
 
@@ -60,7 +65,6 @@ export interface PredictionParams {
   temperature: number;
   udder_humidity: number;
   feed_amount: number;
-  weekly_feed_kg: number;
   breed: string;
   recentProductions: number[];
 }

@@ -1,6 +1,7 @@
 import { getModelAndScaler } from './modelLoader';
 import { formatInputForModel } from './dataPreprocessing';
 import { supabase } from './supabase';
+import { Prediction } from './types';
 
 export interface PredictionInput {
   cowId: string;
@@ -12,7 +13,6 @@ export interface PredictionInput {
   temperature: number;
   udder_humidity: number;
   feed_amount: number;
-  weekly_feed_kg: number;
   breed: string;
   recentProductions: number[];
 }
@@ -26,9 +26,9 @@ export interface PredictionResult {
 export interface SavePredictionParams {
   cow_id: string;
   predicted_production: number;
-  actual_production: number;
+  actual_production: number | null;
   prediction_date: string;
-  presicion: number;
+  presicion: number | null;
 }
 
 /**
@@ -75,15 +75,44 @@ export async function predictMilkProduction(input: PredictionInput): Promise<Pre
 /**
  * Saves prediction results to Supabase
  */
-export async function savePrediction(params: SavePredictionParams): Promise<void> {
+export async function savePrediction(params: SavePredictionParams): Promise<Prediction> {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('predictions')
-      .insert([params]);
+      .insert([params])
+      .select()
+      .single();
 
     if (error) throw error;
+    if (!data) throw new Error('No data returned from insert');
+    
+    return data as Prediction;
   } catch (error) {
     console.error('Error saving prediction:', error);
+    throw error;
+  }
+}
+
+/**
+ * Retrieves predictions from Supabase
+ */
+export async function getPredictions(cowId?: string): Promise<Prediction[]> {
+  try {
+    let query = supabase
+      .from('predictions')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (cowId) {
+      query = query.eq('cow_id', cowId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) throw error;
+    return data as Prediction[];
+  } catch (error) {
+    console.error('Error fetching predictions:', error);
     throw error;
   }
 }

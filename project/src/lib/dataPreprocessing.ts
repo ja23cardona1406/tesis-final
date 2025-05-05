@@ -18,7 +18,6 @@ export class StandardScaler {
         22,  // temperatura (°C)
         65,  // humedad_ubre (%)
         15,  // alimentacion (kg)
-        100, // weekly_feed_kg
         0.8, // raza_Holstein (boolean/fraction)
         18, 17.5, 17, 16.5, 16 // Recent productions (ordeño_x)
       ];
@@ -30,7 +29,6 @@ export class StandardScaler {
         3,   // temperatura (°C)
         10,  // humedad_ubre (%)
         3,   // alimentacion (kg)
-        20,  // weekly_feed_kg
         0.4, // raza_Holstein (boolean/fraction)
         4, 4, 4, 4, 4 // Recent productions (ordeño_x) 
       ];
@@ -95,7 +93,6 @@ export class StandardScaler {
     temperature: number,
     udder_humidity: number,
     feed_amount: number,
-    weekly_feed_kg: number,
     breed: string,
     recentProductions: number[]
   }): number[] {
@@ -111,7 +108,6 @@ export class StandardScaler {
       input.temperature,
       input.udder_humidity,
       input.feed_amount,
-      input.weekly_feed_kg,
       isHolstein,
       // Add recent productions
       ...input.recentProductions

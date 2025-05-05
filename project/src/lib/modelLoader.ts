@@ -8,7 +8,6 @@ export interface ModelInput {
   temperatura: number;
   humedad_ubre: number;
   alimentacion: number;
-  weekly_feed_kg: number;
   raza_Holstein: number;
   [key: string]: number; // For dynamic properties like ordeño_1, ordeño_2, etc.
 }
@@ -40,7 +39,6 @@ class LinearRegressionModel implements Model {
       -0.1, // temperatura (negative because higher temps can reduce production)
       0.15, // humedad_ubre
       0.3, // alimentacion
-      0.2, // weekly_feed_kg
       0.1, // raza_Holstein
       0.4, 0.35, 0.3, 0.25, 0.2 // Recent production weights (ordeño_x)
     ];
@@ -106,7 +104,6 @@ class RidgeRegressionModel implements Model {
       -0.08, // temperatura
       0.14, // humedad_ubre
       0.25, // alimentacion
-      0.18, // weekly_feed_kg
       0.09, // raza_Holstein
       0.36, 0.32, 0.28, 0.24, 0.2 // Recent production weights (ordeño_x)
     ];
