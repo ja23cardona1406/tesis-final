@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link } from 'react-router-dom';
 import { Menu, X, Milk as MilkBottle } from 'lucide-react';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
@@ -54,11 +54,11 @@ function AppContent() {
           <nav className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <a href="/home" className="text-gray-700 hover:text-blue-600">Inicio</a>
-                <a href="/analysis" className="text-gray-700 hover:text-blue-600">Análisis</a>
-                <a href="/Dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</a>
-                <a href="/predictions" className="text-gray-700 hover:text-blue-600">Predicciones</a>
-                <a href="/recommendations" className="text-gray-700 hover:text-blue-600">Recomendaciones</a>
+                <Link to="/home" className="text-gray-700 hover:text-blue-600">Inicio</Link>
+                <Link to="/analysis" className="text-gray-700 hover:text-blue-600">Análisis</Link>
+                <Link to="/Dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
+                <Link to="/predictions" className="text-gray-700 hover:text-blue-600">Predicciones</Link>
+                <Link to="/recommendations" className="text-gray-700 hover:text-blue-600">Recomendaciones</Link>
                 <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-200">
                   <span className="text-sm text-gray-600">{user?.name}</span>
                   <button
@@ -68,7 +68,7 @@ function AppContent() {
                 </div>
               </>
             ) : (
-              <a href="/login" className="text-gray-700 hover:text-blue-600">Iniciar Sesión</a>
+              <Link to="/login" className="text-gray-700 hover:text-blue-600">Iniciar Sesión</Link>
             )}
           </nav>
         </div>
@@ -78,11 +78,11 @@ function AppContent() {
           <nav className="md:hidden px-4 pb-4 space-y-2">
             {isAuthenticated ? (
               <>
-                <a href="/home" className="block text-gray-700 hover:text-blue-600">Inicio</a>
-                <a href="/analysis" className="block text-gray-700 hover:text-blue-600">Análisis</a>
-                <a href="/Dashboard" className="block text-gray-700 hover:text-blue-600">Dashboard</a>
-                <a href="/predictions" className="block text-gray-700 hover:text-blue-600">Predicciones</a>
-                <a href="/recommendations" className="block text-gray-700 hover:text-blue-600">Recomendaciones</a>
+                <Link to="/home" className="block text-gray-700 hover:text-blue-600">Inicio</Link>
+                <Link to="/analysis" className="block text-gray-700 hover:text-blue-600">Análisis</Link>
+                <Link to="/Dashboard" className="block text-gray-700 hover:text-blue-600">Dashboard</Link>
+                <Link to="/predictions" className="block text-gray-700 hover:text-blue-600">Predicciones</Link>
+                <Link to="/recommendations" className="block text-gray-700 hover:text-blue-600">Recomendaciones</Link>
                 <div className="pt-2 border-t border-gray-200">
                   <span className="block text-sm text-gray-600 mb-1">{user?.name}</span>
                   <button
@@ -92,7 +92,7 @@ function AppContent() {
                 </div>
               </>
             ) : (
-              <a href="/login" className="block text-gray-700 hover:text-blue-600">Iniciar Sesión</a>
+              <Link to="/login" className="block text-gray-700 hover:text-blue-600">Iniciar Sesión</Link>
             )}
           </nav>
         )}
@@ -102,11 +102,11 @@ function AppContent() {
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginForm />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <RegisterForm />} />
         <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
-        <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/home" />} />
-        <Route path="/analysis" element={isAuthenticated ? <Analysis /> : <Navigate to="/analysis" />} />
-        <Route path="/Dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/Dashboard" />} />
-        <Route path="/predictions" element={isAuthenticated ? <Predictions /> : <Navigate to="/predictions" />} />
-        <Route path="/recommendations" element={isAuthenticated ? <Recommendations /> : <Navigate to="/recommendations" />} />
+        <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/analysis" element={isAuthenticated ? <Analysis /> : <Navigate to="/login" />} />
+        <Route path="/Dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route path="/predictions" element={isAuthenticated ? <Predictions /> : <Navigate to="/login" />} />
+        <Route path="/recommendations" element={isAuthenticated ? <Recommendations /> : <Navigate to="/login" />} />
       </Routes>
 
       <footer className="bg-gray-800 text-white mt-16">
