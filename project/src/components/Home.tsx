@@ -13,7 +13,6 @@ import 'swiper/css/pagination';
 // Importación de imágenes
 const jaimeImg = "/img/jaime.jpg";
 const carlosImg = "/img/carlos_mario.jpg";
-const jorgeImg = "/img/pincay.jpg";
 const images = [
   "/img/imagen1.jpg",
   "/img/imagen2.jpg",
@@ -82,7 +81,7 @@ function Home() {
           Un agropecuario de 22 años que busca innovar en el sector agrícola en Colombia, con el apoyo de sus profesores de tesis Carlos Mario Paredes y Jorge Luis Pincay.
         </p>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 gap-8">
           {[{
             img: jaimeImg,
             name: "Jaime Andrés Cardona",
@@ -93,14 +92,9 @@ function Home() {
             name: "Carlos Mario Paredes",
             description1: "Profesor de tesis - 30 años",
             description2: "Especialista en Inteligencia Artificial y desarrollo de software"
-          }, {
-            img: jorgeImg,
-            name: "Jorge Luis Pincay",
-            description1: "Profesor de tesis - 30 años",
-            description2: "Investigador en tecnologías para la agricultura"
-          }].map((person, index) => (
+          }, ].map((person, index) => (
             <IonCard key={index} className="shadow-md">
-              <IonImg src={person.img} className="w-full aspect-[3/4] object-cover rounded-t-lg" />
+              <IonImg src={person.img} className="w-full aspect-[4/4] object-cover rounded-t-lg" />
               <IonCardContent className="text-center">
                 <h4 className="text-xl font-semibold">{person.name}</h4>
                 <IonText className="text-gray-600">{person.description1}</IonText>
