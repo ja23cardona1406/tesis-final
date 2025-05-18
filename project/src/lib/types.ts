@@ -5,6 +5,7 @@ export interface User {
 }
 
 export interface Cow {
+  pregnant: any;
   id: string;
   farm_id: string;
   name: string;
@@ -72,4 +73,21 @@ export interface PredictionParams {
 export interface PredictionResult {
   prediction: number;
   confidence: number;
+}
+
+export interface Article {
+  id: string;
+  title: string;
+  content: string;
+  created_at?: string;
+  published?: boolean;
+}
+
+export interface Comment {
+  id: string;
+  article_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  user: User | null;
 }
