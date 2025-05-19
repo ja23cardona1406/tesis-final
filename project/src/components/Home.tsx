@@ -78,7 +78,7 @@ function Home() {
         <h3 className="text-3xl font-bold text-gray-900 mb-6">¿Quiénes Somos?</h3>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-12">
           Este proyecto fue desarrollado por Jaime Andrés Cardona Montero, estudiante de Ingeniería de Sistemas de la Universidad San Buenaventura Cali.
-          Un agropecuario de 22 años que busca innovar en el sector agrícola en Colombia, con el apoyo de sus profesores de tesis Carlos Mario Paredes y Jorge Luis Pincay.
+          Un agropecuario de 22 años que busca innovar en el sector agrícola en Colombia, con el apoyo de su profesor de tesis Carlos Mario Paredes.
         </p>
 
         <div className="grid md:grid-cols-2 gap-8">

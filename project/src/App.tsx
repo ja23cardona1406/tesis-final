@@ -111,7 +111,7 @@ function AppContent() {
 
       <footer className="bg-gray-800 text-white mt-16">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-          <p>© 2024 SisLech - Sistema Inteligente de Producción Lechera</p>
+          <p>© 2024 Agrosoft CM - Sistema Inteligente de Producción Lechera</p>
           <p className="mt-2 text-gray-400">Valle del Cauca, Colombia</p>
         </div>
       </footer>

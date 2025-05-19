@@ -22,6 +22,48 @@ export const getCurrentUser = async () => {
   return user;
 };
 
+// Get minimal public user info for comments (safe for public use)
+export const getCommentUserById = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, name')  // Solo campos públicos para comentarios
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching public user profile:', error);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Error in getCommentUserById:', err);
+    return null;
+  }
+};
+
+// Get user by ID (full profile, restricted use)
+export const getUserById = async (userId: string) => {
+  try {
+    const { data: userData, error } = await supabase
+      .from('profiles')
+      .select('id, name, email')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
+    
+    return userData;
+  } catch (err) {
+    console.error('Error in getUserById:', err);
+    return null;
+  }
+};
+
 // Get all published articles from Supabase
 export const getPublishedArticles = async () => {
   const { data, error } = await supabase
@@ -35,6 +77,37 @@ export const getPublishedArticles = async () => {
   }
 
   return data;
+};
+
+// Get comments with user information (using minimal public user info)
+export const getCommentsWithUsers = async (articleId: string) => {
+  try {
+    const { data: commentsData, error: commentsError } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('article_id', articleId)
+      .order('created_at', { ascending: false });
+
+    if (commentsError) throw commentsError;
+    
+    // Process comments and fetch minimal user info for each
+    const processedComments = await Promise.all((commentsData || []).map(async (comment) => {
+      const userInfo = await getCommentUserById(comment.user_id);
+      return {
+        id: comment.id,
+        article_id: comment.article_id,
+        user_id: comment.user_id,
+        content: comment.content,
+        created_at: comment.created_at,
+        user: userInfo
+      };
+    }));
+
+    return processedComments;
+  } catch (err) {
+    console.error('Error fetching comments with users:', err);
+    return [];
+  }
 };
 
 // Get all cows

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase, getCurrentUser } from '../../lib/supabase';
+import { supabase, getCurrentUser, getUserById } from '../../lib/supabase';
 import ArticleComment from './ArticleComment';
 import CommentForm from './CommentForm';
 import { User, Article, Comment } from '../../lib/types';
@@ -37,7 +37,7 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onClose }) => 
         if (articleError) throw new Error(articleError.message);
         setArticle(articleData as Article);
 
-        // Obtener comentarios y luego usuarios por separado
+        // Get comments
         const { data: commentsData, error: commentsError } = await supabase
           .from('comments')
           .select('*')
@@ -46,48 +46,20 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onClose }) => 
 
         if (commentsError) throw new Error(commentsError.message);
         
-        // Transformamos los comentarios para agregarles información de usuario más adelante
-        const transformedComments: Comment[] = (commentsData || []).map(comment => ({
-          id: comment.id,
-          article_id: comment.article_id,
-          user_id: comment.user_id,
-          content: comment.content,
-          created_at: comment.created_at,
-          user: null // Inicialmente sin datos de usuario
+        // Process comments and fetch user info for each
+        const processedComments = await Promise.all((commentsData || []).map(async (comment) => {
+          const userInfo = await getUserById(comment.user_id);
+          return {
+            id: comment.id,
+            article_id: comment.article_id,
+            user_id: comment.user_id,
+            content: comment.content,
+            created_at: comment.created_at,
+            user: userInfo
+          };
         }));
-        
-        // Si hay comentarios, obtenemos la información de los usuarios
-        if (transformedComments.length > 0) {
-          // Obtenemos todos los IDs de usuario únicos
-          const userIds = [...new Set(transformedComments.map(c => c.user_id))];
-          
-          // Buscamos la información de esos usuarios
-          const { data: usersData, error: usersError } = await supabase
-            .from('users')
-            .select('id, email')
-            .in('id', userIds);
-            
-          if (usersError) throw new Error(usersError.message);
-          
-          // Creamos un mapa para acceder rápidamente a los datos de usuario por ID
-          const userMap = (usersData || []).reduce((map, user) => {
-            map[user.id] = user;
-            return map;
-          }, {} as Record<string, { id: string, email: string }>);
-          
-          // Asignar los datos de usuario a cada comentario
-          transformedComments.forEach(comment => {
-            const userData = userMap[comment.user_id];
-            if (userData) {
-              comment.user = {
-                id: userData.id,
-                email: userData.email
-              };
-            }
-          });
-        }
 
-        setComments(transformedComments);
+        setComments(processedComments);
       } catch (err) {
         console.error('Error fetching article details:', err);
         setError('Error al cargar el artículo y comentarios');
@@ -101,7 +73,6 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onClose }) => 
 
   const handleCommentAdded = async () => {
     try {
-      // Obtener comentarios y luego usuarios por separado
       const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
         .select('*')
@@ -110,48 +81,19 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ articleId, onClose }) => 
 
       if (commentsError) throw new Error(commentsError.message);
       
-      // Transformamos los comentarios
-      const transformedComments: Comment[] = (commentsData || []).map(comment => ({
-        id: comment.id,
-        article_id: comment.article_id,
-        user_id: comment.user_id,
-        content: comment.content,
-        created_at: comment.created_at,
-        user: null // Inicialmente sin datos de usuario
+      const processedComments = await Promise.all((commentsData || []).map(async (comment) => {
+        const userInfo = await getUserById(comment.user_id);
+        return {
+          id: comment.id,
+          article_id: comment.article_id,
+          user_id: comment.user_id,
+          content: comment.content,
+          created_at: comment.created_at,
+          user: userInfo
+        };
       }));
-      
-      // Si hay comentarios, obtenemos la información de los usuarios
-      if (transformedComments.length > 0) {
-        // Obtenemos todos los IDs de usuario únicos
-        const userIds = [...new Set(transformedComments.map(c => c.user_id))];
-        
-        // Buscamos la información de esos usuarios
-        const { data: usersData, error: usersError } = await supabase
-          .from('users')
-          .select('id, email')
-          .in('id', userIds);
-          
-        if (usersError) throw new Error(usersError.message);
-        
-        // Creamos un mapa para acceder rápidamente a los datos de usuario por ID
-        const userMap = (usersData || []).reduce((map, user) => {
-          map[user.id] = user;
-          return map;
-        }, {} as Record<string, { id: string, email: string }>);
-        
-        // Asignar los datos de usuario a cada comentario
-        transformedComments.forEach(comment => {
-          const userData = userMap[comment.user_id];
-          if (userData) {
-            comment.user = {
-              id: userData.id,
-              email: userData.email
-            };
-          }
-        });
-      }
 
-      setComments(transformedComments);
+      setComments(processedComments);
     } catch (err) {
       console.error('Error refreshing comments:', err);
     }

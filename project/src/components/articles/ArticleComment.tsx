@@ -20,8 +20,8 @@ const ArticleComment: React.FC<ArticleCommentProps> = ({
     locale: es
   });
 
-  // Generate a user avatar placeholder based on the first letter of the email
-  const userInitial = user?.email ? user.email[0].toUpperCase() : '?';
+  const displayName = user?.name || user?.email || 'Usuario anónimo';
+  const userInitial = displayName ? displayName[0].toUpperCase() : '?';
   
   return (
     <div className="flex space-x-4 p-4 border-b border-gray-100 transition-colors duration-200 hover:bg-gray-50">
@@ -33,7 +33,7 @@ const ArticleComment: React.FC<ArticleCommentProps> = ({
       <div className="flex-1">
         <div className="flex items-center mb-1">
           <span className="font-medium text-gray-900">
-            {user?.email || 'Usuario anónimo'}
+            {displayName}
           </span>
           <span className="mx-2 text-gray-300">•</span>
           <span className="text-sm text-gray-500">{formattedDate}</span>
